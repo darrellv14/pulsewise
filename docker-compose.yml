@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16
+    container_name: pulsewise_db
+    environment:
+      POSTGRES_DB: pulsewise
+      POSTGRES_USER: pulsewise
+      POSTGRES_PASSWORD: pulsewise
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./pulsewise-db/init:/docker-entrypoint-initdb.d:ro
+    # expose hanya ke localhost host OS, bukan publik
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulsewise -d pulsewise"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./pulsewise-be
+      dockerfile: Dockerfile
+    container_name: pulsewise_backend
+    env_file:
+      - ./pulsewise-be/.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./pulsewise-fe
+      dockerfile: Dockerfile
+    container_name: pulsewise_frontend
+
+  nginx:
+    image: nginx:alpine
+    container_name: pulsewise_nginx
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  db-data:
