@@ -11,7 +11,7 @@ services:
       - ./pulsewise-db/init:/docker-entrypoint-initdb.d:ro
     # expose hanya ke localhost host OS, bukan publik
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pulsewise -d pulsewise"]
       interval: 5s
@@ -42,7 +42,7 @@ services:
       - backend
       - frontend
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
 

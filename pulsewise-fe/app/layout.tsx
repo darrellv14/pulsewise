@@ -32,3 +32,11 @@ export default function RootLayout({
     </html>
   );
 }
+
+/** Dynamic viewport untuk mobile keyboard (iOS/Android) */
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
+} as const;
