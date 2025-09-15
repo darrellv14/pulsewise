@@ -3,7 +3,10 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install PyTorch CPU wheels first (smaller image, reliable resolution), then other deps
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+	torch torchvision torchaudio && \
+	pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY .env .env

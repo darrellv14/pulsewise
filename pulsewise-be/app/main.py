@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import diaries, auth, meds, lifestyle, education
+from .routers import ecg
 
 app = FastAPI(title="PulseWise API")
 
@@ -19,6 +20,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(meds.router, prefix="/meds", tags=["medications"])
 app.include_router(lifestyle.router, prefix="/lifestyle", tags=["lifestyle"])
 app.include_router(education.router, prefix="/edu", tags=["education"])
+app.include_router(ecg.router, prefix="/ecg", tags=["ecg"])
 
 frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:8080")
 app.add_middleware(

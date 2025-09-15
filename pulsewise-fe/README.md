@@ -1,4 +1,5 @@
 ## PulseWise Frontend (Next.js)
+- ECG demo page is available at `/ecg` after running the stack.
 
 ### Dev run
 ```powershell
