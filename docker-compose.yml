@@ -34,10 +34,8 @@ services:
       context: ./pulsewise-fe
       dockerfile: Dockerfile
     container_name: pulsewise_frontend
-    environment:
-      - NEXTAUTH_URL=http://localhost:8080/api/auth
-      - NEXTAUTH_SECRET=dev_secret_change_me
-      - NEXT_PUBLIC_API_BASE=/api
+    env_file:
+      - pulsewise-fe/.env.production
 
   nginx:
     image: nginx:alpine

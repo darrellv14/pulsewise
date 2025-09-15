@@ -1,5 +1,5 @@
 upstream app_backend {
-    # pakai nama container atau service; di compose kamu: pulsewise_backend
+    # pakai nama container (container_name) atau service name. Keduanya valid.
     server pulsewise_backend:8000;
     keepalive 32;
 }
@@ -15,17 +15,17 @@ server {
 
   client_max_body_size 10m;
 
-  # --- NextAuth (HARUS di atas /api) ---
+  # NextAuth (must be before generic /api rule)
   location /api/auth/ {
     proxy_http_version 1.1;
     proxy_set_header   Host $host;
     proxy_set_header   X-Real-IP $remote_addr;
     proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header   X-Forwarded-Proto $scheme;
-    proxy_pass         http://app_frontend;     # tidak pakai trailing slash
+    proxy_pass         http://app_frontend;
   }
 
-  # --- API untuk FastAPI ---
+  # Proxy API -> FastAPI
   location /api/ {
     proxy_http_version 1.1;
     proxy_set_header   Host $host;
@@ -33,13 +33,13 @@ server {
     proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header   X-Forwarded-Proto $scheme;
 
-    # hapus prefix /api -> /health, /diaries, dst.
+    # strip prefix /api -> /health, /diaries, dst.
     rewrite ^/api/(.*)$ /$1 break;
 
-    proxy_pass         http://app_backend;      # boleh tanpa trailing slash karena sudah di-rewrite
+    proxy_pass         http://app_backend;
   }
 
-  # --- Halaman FE lain (termasuk /auth UI buatan sendiri) ---
+  # Human-facing auth pages (custom UI under /auth)
   location /auth/ {
     proxy_http_version 1.1;
     proxy_set_header   Host $host;
@@ -49,15 +49,14 @@ server {
     proxy_pass         http://app_frontend;
   }
 
-  # --- Default ke Next.js ---
+  # Frontend Next.js
   location / {
     proxy_http_version 1.1;
     proxy_set_header   Host $host;
     proxy_set_header   X-Real-IP $remote_addr;
     proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header   X-Forwarded-Proto $scheme;
-    proxy_set_header   Upgrade $http_upgrade;
-    proxy_set_header   Connection "upgrade";
+
     proxy_pass         http://app_frontend;
   }
 }

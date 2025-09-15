@@ -1,6 +1,7 @@
+from sqlalchemy.dialects.postgresql import ARRAY
 import uuid
-from datetime import datetime, date
-from sqlalchemy import (
+from datetime import datetime, date, time
+from sqlalchemy import (Integer, 
     Date,
     ForeignKey,
     Integer,
@@ -110,8 +111,8 @@ class MedicationSchedule(Base):
     medication_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("medications.medication_id", ondelete="CASCADE")
     )
-    time_of_day: Mapped[datetime | None] = mapped_column(Time)
-    days_of_week: Mapped[list[int] | None]
+    time_of_day: Mapped[time | None] = mapped_column(Time)
+    days_of_week: Mapped[list[int] | None] = mapped_column(ARRAY(Integer), nullable=True)
     timezone: Mapped[str]
     as_needed: Mapped[bool]
     interval_days: Mapped[int]

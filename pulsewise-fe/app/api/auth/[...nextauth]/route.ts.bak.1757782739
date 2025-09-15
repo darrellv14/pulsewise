@@ -1,16 +1,17 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// Use internal URL inside Docker for server-side, fall back to public for browser
-const API_BASE =
-  process.env.BACKEND_INTERNAL_URL /* e.g. http://backend:8000 */
-  || process.env.NEXT_PUBLIC_API_BASE /* e.g. http://localhost:8080/api */
-  || "/api";
+/**
+ * NOTE:
+ * - Jangan export apa pun selain handler (GET/POST) dari route.ts
+ * - Pakai URL internal antar-kontainer untuk call FastAPI (hindari /api/auth/* loop)
+ */
+const BACKEND = process.env.BACKEND_INTERNAL_URL || "http://backend:8000";
 
 const authOptions: NextAuthOptions = {
-  // v4: no `trustHost` here
   secret: process.env.NEXTAUTH_SECRET,
-  pages: { signIn: "/auth/signin" }, // optional
+  trustHost: true,
+  pages: { signIn: "/auth/signin" }, // opsional: kalau kamu punya page ini
 
   session: { strategy: "jwt" },
 
@@ -22,22 +23,21 @@ const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials.password) return null;
+        if (!credentials?.username || !credentials?.password) return null;
 
-        const body: any = { password: credentials.password };
+        const body: Record<string, string> = { password: credentials.password };
         if (credentials.username.includes("@")) body.email = credentials.username;
         else body.username = credentials.username;
 
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        const res = await fetch(`${BACKEND}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
 
         if (!res.ok) return null;
-        const data = await res.json();
 
-        // shape: { access_token, user: { user_id, username, email } }
+        const data = await res.json();
         return {
           id: data.user.user_id,
           name: data.user.username,
